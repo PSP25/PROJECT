@@ -1,4 +1,5 @@
-
+// Define a variable to hold the high score
+let highScore = localStorage.getItem("flappybird_highscore") || 0;
 //board
 let board;
 let boardWidth = 360;
@@ -38,6 +39,8 @@ let gameOver = false;
 let score = 0;
 
 window.onload = function() {
+        localStorage.setItem("flappybird_highscore", 0);
+
     board = document.getElementById("board");
     board.height = boardHeight;
     board.width = boardWidth;
@@ -71,7 +74,7 @@ function update() {
         return;
     }
     context.clearRect(0, 0, board.width, board.height);
-
+    updateScoreDisplay();
     //bird
     velocityY += gravity;
     // bird.y += velocityY;
@@ -94,6 +97,7 @@ function update() {
         }
 
         if (detectCollision(bird, pipe)) {
+            updateScoreDisplay();
             gameOver = true;
         }
     }
@@ -104,12 +108,17 @@ function update() {
     }
 
     //score
-    context.fillStyle = "white";
-    context.font="45px sans-serif";
-    context.fillText(score, 5, 45);
+    
+    function updateScoreDisplay() {
+        context.fillStyle = "white";
+        context.font = "30px sans-serif";
+        context.fillText("Score: " + score, 5, 45);
+        context.fillText("High Score: " + highScore, 5, 85);
+        // Display high score on a new line
+    }
 
     if (gameOver) {
-        context.fillText("GAME OVER", 5, 90);
+        context.fillText("GAME OVER", 5, 130);
     }
 }
 
@@ -161,8 +170,18 @@ function moveBird(e) {
 }
 
 function detectCollision(a, b) {
-    return a.x < b.x + b.width &&   //a's top left corner doesn't reach b's top right corner
-           a.x + a.width > b.x &&   //a's top right corner passes b's top left corner
-           a.y < b.y + b.height &&  //a's top left corner doesn't reach b's bottom left corner
-           a.y + a.height > b.y;    //a's bottom left corner passes b's top left corner
+    if (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+    ) {
+        if (score > highScore) {
+            highScore = score;
+            localStorage.setItem("flappybird_highscore", highScore);
+        }
+
+        return true;
+    }
+    return false;
 }
